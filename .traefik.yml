@@ -1,0 +1,24 @@
+displayName: Request Filter
+type: middleware
+import: github.com/0xanonymeow/traefik-request-filter
+summary: "Filter requests based on headers, query parameters, and body."
+testData:
+  headers:
+    X-Foo: bar
+    X-Bar: baz,qux;quux
+  query:
+    foo: bar
+    bar: baz,qux;quux
+  body:
+    # regex: ^foo$
+    json:
+      foo: bar
+      bar: true
+      baz: 100
+      qux:
+        - quux
+        - true
+        - 100
+      
+iconPath: .assets/icon.png
+bannerPath: .assets/banner.png

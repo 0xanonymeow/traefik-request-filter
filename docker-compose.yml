@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --experimental.localPlugins.traefik-request-filter.modulename=github.com/0xanonymeow/traefik-request-filter
+      # - --experimental.plugins.traefik-request-filter.modulename=github.com/0xanonymeow/traefik-request-filter
+      # - --experimental.plugins.traefik-request-filter.version=v0.1.0
+      - --providers.docker=true
+      - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
+      - --log.level=debug
+      - --accesslog=true
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.traefik.yml:/plugins-local/src/github.com/0xanonymeow/traefik-request-filter/.traefik.yml
+      - ./plugin.go:/plugins-local/src/github.com/0xanonymeow/traefik-request-filter/plugin.go
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.headers.X-Foo=bar
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.headers.X-Bar=baz,qux;quux
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.query.foo=bar
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.query.bar=baz,qux;quux
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.body.json.foo=bar
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.body.json.bar=true
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.body.json.baz=100
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.body.json.qux[0]=quux
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.body.json.qux[1]=true
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.body.json.qux[2]=100
+      - traefik.http.middlewares.requestFilter.plugin.traefik-request-filter.body.json.quux=quuux
+  whoami:
+    image: traefik/whoami
+    container_name: whoami
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.whoami.rule=PathPrefix(`/`)
+      - traefik.http.services.whoami.loadbalancer.server.port=80
+      - traefik.http.routers.whoami.middlewares=requestFilter@docker
