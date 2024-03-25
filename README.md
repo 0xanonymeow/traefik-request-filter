@@ -13,7 +13,7 @@ experimental:
   plugins:
     traefik-request-filter:
       moduleName: github.com/0xanonymeow/traefik-request-filter
-      version: v0.1.0
+      version: v0.1.1
 
 ```
 
